@@ -5,6 +5,10 @@
 	size: .word 6
 	under: .asciiz "\n"
 	space: .asciiz " "
+	mergecount: .asciiz "merge lan "
+	point: .asciiz " : "
+	first: .asciiz "mang ban dau: "
+	
 .text
 
 	Main: 
@@ -12,6 +16,39 @@
 		li $a1, 0 #a1 = left
 		lw $t0, size #luu gia tri cua t0 la size cua array
 		move $a2, $t0 #truyen gia tri cua a2 = t0 = size
+		li $t8, 1 #mang can dem
+		
+		addi $sp, $sp, -4
+		sw $a0, 0($sp)
+		
+		la $a0, first #dia chi cua mang ban dau
+		li $v0, 4
+		syscall
+		
+		li $t1, 1 #t1 se la bien dem
+		la $t4, array
+		
+		for: 
+			bgt $t1, $t0, end 
+			lw $a0, 0($t4) #a0 = array[index]
+			li $v0, 1 
+			syscall
+			la $a0, space 
+			li $v0, 4
+			syscall 
+			
+			addi $t4, $t4, 4 #cong them t0 += 4 de tang bien dem
+			addi $t1, $t1, 1
+			j for
+		end:	
+			la $a0, under
+			li $v0, 4
+			syscall
+			
+			lw $a0, 0($sp)
+			addi $sp, $sp, 4
+		
+		
 		addi $a2, $a2, -1 #a2 = right = size - 1
 		
 		addi $sp, $sp, -16
@@ -44,11 +81,23 @@
 			addi $sp, $sp, -16 #bat dau xai stack
 			
 			sw $a0, 0($sp) #luu gia tri cua a0 = dia chi cua array
-			sw $t0, 4($sp) #luu gia tri cua t0 la 
+			sw $t0, 4($sp) 
 			sw $t2, 8($sp)
 			sw $ra, 12($sp)
 			
-		print:  
+			li $t4, 1 #dem lan merge
+			la $a0, mergecount
+			li $v0, 4
+			syscall
+			
+			move $a0, $t8
+			li $v0, 1
+			syscall
+			
+			la $a0, point
+			li $v0, 4
+			syscall
+		print: 
 			bgt $t0, $t2, endprint #neu t0 > t2 hay 
 			lw $a0, 0($t0) #a0 = array[index]
 			li $v0, 1 
@@ -63,6 +112,8 @@
 			la $a0, under
 			li $v0, 4
 			syscall
+			
+			addi $t8, $t8, 1 
 			
 			lw $a0, 0($sp)
 			lw $t0, 4($sp)
@@ -143,7 +194,8 @@
 		lw $a1, 8($sp)
 		lw $a0, 12($sp)
 		addi $sp, $sp, 16
-			
+		
+		
 		jal printArray
 		
 		lw $ra, 0($sp)
